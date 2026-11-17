@@ -1,4 +1,6 @@
-﻿namespace netDumbster.Test;
+﻿using MailKit;
+
+namespace netDumbster.Test;
 
 public class MailKitTests : IDisposable
 {

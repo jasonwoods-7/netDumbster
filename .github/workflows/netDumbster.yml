@@ -21,27 +21,27 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
-      
+          dotnet-version: 10.0.x
+
       - name: Setup MinVer
         run: |
-          dotnet tool install --global minver-cli --version 4.2.0
+          dotnet tool install --global minver-cli --version 8.0.0
 
       - name: Calculate Version
         run: |
-          echo "MINVERVERSIONOVERRIDE=$($HOME/.dotnet/tools/minver -t v. -m 0.1 -d preview)" >> $GITHUB_ENV
+          echo "MINVERVERSIONOVERRIDE=$($HOME/.dotnet/tools/minver -t v. -m 0.1 -p preview.0)" >> $GITHUB_ENV
         if: matrix.os != 'windows-latest'
 
       - name: Calculate Version Windows
         run: |
-          echo "MINVERVERSIONOVERRIDE=$(minver -t v. -m 0.1 -d preview)" >> $env:GITHUB_ENV
+          echo "MINVERVERSIONOVERRIDE=$(minver -t v. -m 0.1 -p preview.0)" >> $env:GITHUB_ENV
         if: matrix.os == 'windows-latest'
 
       - name: Build
@@ -49,7 +49,7 @@ jobs:
 
       - name: Test
         run: dotnet test -c Release --no-build
-      
+
       - name: Pack nugets
         run: dotnet pack -c Release --no-build --output .
         if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request' && startswith(github.ref, 'refs/tags/v')
@@ -57,4 +57,3 @@ jobs:
       - name: Push to NuGet
         run: dotnet nuget push "*.nupkg" --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
         if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request' && startswith(github.ref, 'refs/tags/v')
-        
